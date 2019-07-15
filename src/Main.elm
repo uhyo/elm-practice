@@ -24,12 +24,18 @@ type Page
 
 
 type alias Model =
-    Page
+    { prevHistory : List Page
+    , currentPage : Page
+    , forwardHistory : List Page
+    }
 
 
 init : Model
 init =
-    Page2 P2.init
+    { prevHistory = []
+    , currentPage = Page2 P2.init
+    , forwardHistory = []
+    }
 
 
 
@@ -46,34 +52,45 @@ update : Msg -> Model -> Model
 update msg model =
     let
         page =
-            model
+            model.currentPage
     in
-    case ( msg, page ) of
-        ( Page1Msg m, Page1 p ) ->
-            Page1 <| P1.update m p
+    let
+        page2 =
+            case ( msg, page ) of
+                ( Page1Msg m, Page1 p ) ->
+                    Page1 <| P1.update m p
 
-        ( Page2Msg m, Page2 p ) ->
-            Page2 <| P2.update m p
+                ( Page2Msg m, Page2 p ) ->
+                    Page2 <| P2.update m p
 
-        _ ->
-            model
+                _ ->
+                    page
+    in
+    { model
+        | currentPage = page2
+    }
 
 
 
 -- VIEW
 
 
-view : Model -> Html Msg
-view model =
+renderPage : Page -> Html Msg
+renderPage page =
     let
-        page =
-            case model of
+        pagev =
+            case page of
                 Page1 m ->
                     P1.view m |> Html.map Page1Msg
 
                 Page2 m ->
                     P2.view m |> Html.map Page2Msg
     in
+    page_wrapper [ pagev ]
+
+
+view : Model -> Html Msg
+view model =
     let
         footer_props =
             { prev_available = False
@@ -81,6 +98,6 @@ view model =
             }
     in
     app
-        [ page_container [ page_wrapper [ page ] ]
+        [ page_container [ renderPage model.currentPage ]
         , Footer.view footer_props |> Html.map FooterMsg
         ]
