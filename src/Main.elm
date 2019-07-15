@@ -23,10 +23,17 @@ type Page
     | Page2 P2.Model
 
 
+type PageAnimation
+    = None
+    | Prev
+    | Forward
+
+
 type alias Model =
     { prevHistory : List Page
     , currentPage : Page
     , forwardHistory : List Page
+    , animation : PageAnimation
     }
 
 
@@ -35,6 +42,7 @@ init =
     { prevHistory = []
     , currentPage = Page2 P2.init
     , forwardHistory = []
+    , animation = None
     }
 
 
@@ -53,6 +61,7 @@ goto page model =
     { prevHistory = model.currentPage :: model.prevHistory
     , currentPage = page
     , forwardHistory = []
+    , animation = Forward
     }
 
 
@@ -74,6 +83,7 @@ updateFooterMsg msg model =
                     { prevHistory = rest
                     , currentPage = last
                     , forwardHistory = model.currentPage :: model.forwardHistory
+                    , animation = Prev
                     }
 
         Footer.Forward ->
@@ -85,6 +95,7 @@ updateFooterMsg msg model =
                     { prevHistory = model.currentPage :: model.prevHistory
                     , currentPage = last
                     , forwardHistory = rest
+                    , animation = Forward
                     }
 
 
@@ -134,6 +145,33 @@ renderPage page =
     page_wrapper [ pagev ]
 
 
+renderPages : Model -> List (Html Msg)
+renderPages model =
+    let
+        current =
+            renderPage model.currentPage
+    in
+    case model.animation of
+        None ->
+            [ current ]
+
+        Prev ->
+            List.head model.forwardHistory
+                |> Maybe.map
+                    (\nextPage ->
+                        [ current, renderPage nextPage ]
+                    )
+                |> Maybe.withDefault [ current ]
+
+        Forward ->
+            List.head model.prevHistory
+                |> Maybe.map
+                    (\prevPage ->
+                        [ renderPage prevPage, current ]
+                    )
+                |> Maybe.withDefault [ current ]
+
+
 view : Model -> Html Msg
 view model =
     let
@@ -142,7 +180,6 @@ view model =
             , forward_available = not <| List.isEmpty model.forwardHistory
             }
     in
-    app
-        [ page_container [ renderPage model.currentPage ]
-        , Footer.view footer_props |> Html.map FooterMsg
-        ]
+    app <|
+        [ page_container <| renderPages model ]
+            ++ [ Footer.view footer_props |> Html.map FooterMsg ]
