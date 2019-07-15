@@ -48,27 +48,72 @@ type Msg
     | FooterMsg Footer.Msg
 
 
+goto : Page -> Model -> Model
+goto page model =
+    { prevHistory = model.currentPage :: model.prevHistory
+    , currentPage = page
+    , forwardHistory = []
+    }
+
+
+updateFooterMsg : Footer.Msg -> Model -> Model
+updateFooterMsg msg model =
+    case msg of
+        Footer.GotoPage1 ->
+            goto (Page1 P1.init) model
+
+        Footer.GotoPage2 ->
+            goto (Page2 P2.init) model
+
+        Footer.Prev ->
+            case model.prevHistory of
+                [] ->
+                    model
+
+                last :: rest ->
+                    { prevHistory = rest
+                    , currentPage = last
+                    , forwardHistory = model.currentPage :: model.forwardHistory
+                    }
+
+        Footer.Forward ->
+            case model.forwardHistory of
+                [] ->
+                    model
+
+                last :: rest ->
+                    { prevHistory = model.currentPage :: model.prevHistory
+                    , currentPage = last
+                    , forwardHistory = rest
+                    }
+
+
 update : Msg -> Model -> Model
 update msg model =
     let
         page =
             model.currentPage
     in
-    let
-        page2 =
-            case ( msg, page ) of
-                ( Page1Msg m, Page1 p ) ->
-                    Page1 <| P1.update m p
+    case msg of
+        FooterMsg m ->
+            updateFooterMsg m model
 
-                ( Page2Msg m, Page2 p ) ->
-                    Page2 <| P2.update m p
+        _ ->
+            let
+                page2 =
+                    case ( msg, page ) of
+                        ( Page1Msg m, Page1 p ) ->
+                            Page1 <| P1.update m p
 
-                _ ->
-                    page
-    in
-    { model
-        | currentPage = page2
-    }
+                        ( Page2Msg m, Page2 p ) ->
+                            Page2 <| P2.update m p
+
+                        _ ->
+                            page
+            in
+            { model
+                | currentPage = page2
+            }
 
 
 
@@ -93,8 +138,8 @@ view : Model -> Html Msg
 view model =
     let
         footer_props =
-            { prev_available = False
-            , forward_available = False
+            { prev_available = not <| List.isEmpty model.prevHistory
+            , forward_available = not <| List.isEmpty model.forwardHistory
             }
     in
     app

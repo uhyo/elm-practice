@@ -1,4 +1,4 @@
-module Footer exposing (Msg, view)
+module Footer exposing (Msg(..), view)
 
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (disabled)
