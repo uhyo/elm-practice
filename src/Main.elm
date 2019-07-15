@@ -35,6 +35,16 @@ type PageAnimation
     | Forward Bool
 
 
+isNone : PageAnimation -> Bool
+isNone a =
+    case a of
+        None ->
+            True
+
+        _ ->
+            False
+
+
 type alias Model =
     { prevHistory : List Page
     , currentPage : Page
@@ -73,7 +83,10 @@ const x y =
 
 
 nextStartAnimation =
-    Process.sleep 1 |> Task.perform (const StartAnimation)
+    Cmd.batch
+        [ Process.sleep 20 |> Task.perform (const StartAnimation)
+        , Process.sleep 500 |> Task.perform (const EndAnimation)
+        ]
 
 
 goto : PageModel -> Model -> ( Model, Cmd Msg )
@@ -145,6 +158,11 @@ updateStartAnimation model =
     ( { model | animation = newAnimation }, Cmd.none )
 
 
+updateEndAnimation : Model -> ( Model, Cmd Msg )
+updateEndAnimation model =
+    ( { model | animation = None }, Cmd.none )
+
+
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
@@ -157,6 +175,9 @@ update msg model =
 
         StartAnimation ->
             updateStartAnimation model
+
+        EndAnimation ->
+            updateEndAnimation model
 
         _ ->
             let
@@ -290,8 +311,9 @@ view : Model -> Html Msg
 view model =
     let
         footer_props =
-            { prev_available = not <| List.isEmpty model.prevHistory
-            , forward_available = not <| List.isEmpty model.forwardHistory
+            { prev_available = isNone model.animation && not (List.isEmpty model.prevHistory)
+            , forward_available = isNone model.animation && not (List.isEmpty model.forwardHistory)
+            , goto_available = isNone model.animation
             }
     in
     app <|

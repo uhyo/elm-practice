@@ -9,6 +9,7 @@ import Util exposing (styles)
 type alias ViewProps =
     { prev_available : Bool
     , forward_available : Bool
+    , goto_available : Bool
     }
 
 
@@ -48,9 +49,13 @@ view props =
             ]
             "→"
         , flex_button
-            [ onClick GotoPage1 ]
+            [ disabled (not props.goto_available)
+            , onClick GotoPage1
+            ]
             "Page 1"
         , flex_button
-            [ onClick GotoPage2 ]
+            [ disabled (not props.goto_available)
+            , onClick GotoPage2
+            ]
             "Page 2"
         ]
