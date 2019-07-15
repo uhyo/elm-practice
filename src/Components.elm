@@ -1,4 +1,4 @@
-module Components exposing (app, page_wrapper)
+module Components exposing (app, page_container, page_wrapper)
 
 import Html exposing (Html, div)
 import Html.Attributes exposing (style)
@@ -15,7 +15,7 @@ app children =
         children
 
 
-page_wrapper p =
+page_container children =
     div
         (styles
             [ ( "height", "260px" )
@@ -23,4 +23,10 @@ page_wrapper p =
             , ( "border", "1px solid #999999" )
             ]
         )
+        children
+
+
+page_wrapper p =
+    div
+        []
         p

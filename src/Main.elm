@@ -1,7 +1,7 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
-import Components exposing (app, page_wrapper)
+import Components exposing (app, page_container, page_wrapper)
 import Footer
 import Html exposing (Html, article, button, div, h1, input, span, text)
 import Html.Attributes exposing (value)
@@ -81,6 +81,6 @@ view model =
             }
     in
     app
-        [ page_wrapper [ page ]
+        [ page_container [ page_wrapper [ page ] ]
         , Footer.view footer_props |> Html.map FooterMsg
         ]
