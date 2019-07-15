@@ -33,6 +33,7 @@ page_container children =
             , ( "height", height )
             , ( "padding", "16px" )
             , ( "border", "1px solid #999999" )
+            , ( "overflow", "hidden" )
             ]
         )
         children
