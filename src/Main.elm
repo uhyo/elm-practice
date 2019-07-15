@@ -20,9 +20,13 @@ main =
 -- MODEL
 
 
-type Page
+type PageModel
     = Page1 P1.Model
     | Page2 P2.Model
+
+
+type alias Page =
+    ( String, PageModel )
 
 
 type PageAnimation
@@ -36,15 +40,17 @@ type alias Model =
     , currentPage : Page
     , forwardHistory : List Page
     , animation : PageAnimation
+    , nextPageId : Int
     }
 
 
 init : Int -> ( Model, Cmd Msg )
 init _ =
     ( { prevHistory = []
-      , currentPage = Page2 P2.init
+      , currentPage = ( "0", Page2 P2.init )
       , forwardHistory = []
       , animation = None
+      , nextPageId = 1
       }
     , Cmd.none
     )
@@ -67,15 +73,16 @@ const x y =
 
 
 nextStartAnimation =
-    Process.sleep 1000 |> Task.perform (const StartAnimation)
+    Process.sleep 1 |> Task.perform (const StartAnimation)
 
 
-goto : Page -> Model -> ( Model, Cmd Msg )
+goto : PageModel -> Model -> ( Model, Cmd Msg )
 goto page model =
     ( { prevHistory = model.currentPage :: model.prevHistory
-      , currentPage = page
+      , currentPage = ( String.fromInt model.nextPageId, page )
       , forwardHistory = []
       , animation = Forward False
+      , nextPageId = model.nextPageId + 1
       }
     , nextStartAnimation
     )
@@ -96,10 +103,11 @@ updateFooterMsg msg model =
                     ( model, Cmd.none )
 
                 last :: rest ->
-                    ( { prevHistory = rest
-                      , currentPage = last
-                      , forwardHistory = model.currentPage :: model.forwardHistory
-                      , animation = Prev False
+                    ( { model
+                        | prevHistory = rest
+                        , currentPage = last
+                        , forwardHistory = model.currentPage :: model.forwardHistory
+                        , animation = Prev False
                       }
                     , nextStartAnimation
                     )
@@ -110,10 +118,11 @@ updateFooterMsg msg model =
                     ( model, Cmd.none )
 
                 last :: rest ->
-                    ( { prevHistory = model.currentPage :: model.prevHistory
-                      , currentPage = last
-                      , forwardHistory = rest
-                      , animation = Forward False
+                    ( { model
+                        | prevHistory = model.currentPage :: model.prevHistory
+                        , currentPage = last
+                        , forwardHistory = rest
+                        , animation = Forward False
                       }
                     , nextStartAnimation
                     )
@@ -153,11 +162,11 @@ update msg model =
             let
                 page2 =
                     case ( msg, page ) of
-                        ( Page1Msg m, Page1 p ) ->
-                            Page1 <| P1.update m p
+                        ( Page1Msg m, ( id, Page1 p ) ) ->
+                            ( id, Page1 <| P1.update m p )
 
-                        ( Page2Msg m, Page2 p ) ->
-                            Page2 <| P2.update m p
+                        ( Page2Msg m, ( id, Page2 p ) ) ->
+                            ( id, Page2 <| P2.update m p )
 
                         _ ->
                             page
@@ -188,41 +197,45 @@ type PagePosition
     | ForwardPosition
 
 
-renderPage : Bool -> PagePosition -> Page -> Html Msg
-renderPage animating pos page =
-    let
-        pagev =
-            case page of
-                Page1 m ->
-                    P1.view m |> Html.map Page1Msg
+renderPage : Bool -> PagePosition -> Page -> ( String, Html Msg )
+renderPage animating pos p =
+    Tuple.mapSecond
+        (\page ->
+            let
+                pagev =
+                    case page of
+                        Page1 m ->
+                            P1.view m |> Html.map Page1Msg
 
-                Page2 m ->
-                    P2.view m |> Html.map Page2Msg
-    in
-    let
-        attrs =
-            case pos of
-                PrevPosition ->
-                    [ style "transform" "translateX(-100%)" ]
+                        Page2 m ->
+                            P2.view m |> Html.map Page2Msg
+            in
+            let
+                attrs =
+                    case pos of
+                        PrevPosition ->
+                            [ style "transform" "translateX(-100%)" ]
 
-                CurrentPosition ->
-                    [ style "transform" "translateX(0%)" ]
+                        CurrentPosition ->
+                            [ style "transform" "translateX(0%)" ]
 
-                ForwardPosition ->
-                    [ style "transform" "translateX(100%)" ]
-    in
-    let
-        animAttrs =
-            if animating then
-                [ style "transition" "transform 0.5s ease-out" ]
+                        ForwardPosition ->
+                            [ style "transform" "translateX(100%)" ]
+            in
+            let
+                animAttrs =
+                    if animating then
+                        [ style "transition" "transform 0.5s ease-out" ]
 
-            else
-                []
-    in
-    page_wrapper (animAttrs ++ attrs) [ pagev ]
+                    else
+                        []
+            in
+            page_wrapper (animAttrs ++ attrs) [ pagev ]
+        )
+        p
 
 
-renderPages : Model -> List (Html Msg)
+renderPages : Model -> List ( String, Html Msg )
 renderPages model =
     let
         current =

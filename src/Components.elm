@@ -2,6 +2,7 @@ module Components exposing (app, page_container, page_wrapper)
 
 import Html exposing (Html, div)
 import Html.Attributes exposing (style)
+import Html.Keyed exposing (node)
 import Util exposing (styles)
 
 
@@ -23,8 +24,10 @@ app children =
         children
 
 
+page_container : List ( String, Html msg ) -> Html msg
 page_container children =
-    div
+    Html.Keyed.node
+        "div"
         (styles
             [ ( "position", "relative" )
             , ( "height", height )
