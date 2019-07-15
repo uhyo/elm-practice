@@ -1,6 +1,8 @@
 module Main exposing (Model, Msg(..), init, main, update, view)
 
 import Browser
+import Components exposing (app, page_wrapper)
+import Footer
 import Html exposing (Html, article, button, div, h1, input, span, text)
 import Html.Attributes exposing (value)
 import Html.Events exposing (onClick, onInput)
@@ -37,6 +39,7 @@ init =
 type Msg
     = Page1Msg P1.Msg
     | Page2Msg P2.Msg
+    | FooterMsg Footer.Msg
 
 
 update : Msg -> Model -> Model
@@ -62,9 +65,22 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    case model of
-        Page1 m ->
-            P1.view m |> Html.map Page1Msg
+    let
+        page =
+            case model of
+                Page1 m ->
+                    P1.view m |> Html.map Page1Msg
 
-        Page2 m ->
-            P2.view m |> Html.map Page2Msg
+                Page2 m ->
+                    P2.view m |> Html.map Page2Msg
+    in
+    let
+        footer_props =
+            { prev_available = False
+            , forward_available = False
+            }
+    in
+    app
+        [ page_wrapper [ page ]
+        , Footer.view footer_props |> Html.map FooterMsg
+        ]
