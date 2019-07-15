@@ -1,0 +1,17 @@
+{
+  "name": "elm-practice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "elm.js",
+  "scripts": {
+    "server": "elm-live src/Main.elm -- --output=elm.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "uhyo",
+  "license": "MIT",
+  "devDependencies": {
+    "elm": "^0.19.0-no-deps",
+    "elm-live": "^3.4.1"
+  }
+}

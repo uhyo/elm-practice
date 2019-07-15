@@ -5,10 +5,18 @@ import Html.Attributes exposing (style)
 import Util exposing (styles)
 
 
+width =
+    "320px"
+
+
+height =
+    "260px"
+
+
 app children =
     div
         (styles
-            [ ( "width", "320px" )
+            [ ( "width", width )
             , ( "margin", "100px auto" )
             ]
         )
@@ -18,7 +26,8 @@ app children =
 page_container children =
     div
         (styles
-            [ ( "height", "260px" )
+            [ ( "position", "relative" )
+            , ( "height", height )
             , ( "padding", "16px" )
             , ( "border", "1px solid #999999" )
             ]
@@ -26,7 +35,13 @@ page_container children =
         children
 
 
-page_wrapper p =
+page_wrapper attrs p =
     div
-        []
+        (styles
+            [ ( "position", "absolute" )
+            , ( "width", "100%" )
+            , ( "height", height )
+            ]
+            ++ attrs
+        )
         p
