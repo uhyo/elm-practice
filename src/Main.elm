@@ -85,7 +85,7 @@ const x y =
 nextStartAnimation =
     Cmd.batch
         [ Process.sleep 20 |> Task.perform (const StartAnimation)
-        , Process.sleep 500 |> Task.perform (const EndAnimation)
+        , Process.sleep 300 |> Task.perform (const EndAnimation)
         ]
 
 
@@ -246,7 +246,7 @@ renderPage animating pos p =
             let
                 animAttrs =
                     if animating then
-                        [ style "transition" "transform 0.5s ease-out" ]
+                        [ style "transition" "transform 0.3s ease-out" ]
 
                     else
                         []

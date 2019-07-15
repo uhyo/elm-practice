@@ -4,6 +4,7 @@
   "description": "",
   "main": "elm.js",
   "scripts": {
+    "build": "elm make src/Main.elm --optimize --output=elm.js",
     "server": "elm-live src/Main.elm -- --output=elm.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
